@@ -4,7 +4,9 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import v2
 from torch.nn import functional as F
-
+from os import listdir
+from os.path import join
+from PIL import Image
 
 class HTR_Tokenizer():
     def __init__(self, tokens: tuple, blank_idx:int=0):
@@ -54,18 +56,18 @@ tfm_val = v2.Compose([
     v2.Normalize(mean=[0.0426], std=[0.2020])
 ])
 
-tfm_train = v2.Compose([
+tfm_train_IAM = v2.Compose([
     v2.ToImage(),
     v2.ToDtype(torch.float, scale=True),
     v2.Lambda(lambda x: (x < 0.8).float()),
     v2.RandomRotation(
-        degrees=(-12, 12),
+        degrees=(-13, 13),
         expand=True,
         fill=0),
     v2.RandomAffine(
         degrees=(0, 0),
         # translate=(0.1, 0.1),    # Случайное смещение до 10% по горизонтали и вертикали
-        scale=(0.85, 1.0),        # Случайное масштабирование (зум) от 90% до 110%
+        scale=(0.6, 0.9),        # Случайное масштабирование (зум) от 90% до 110%
         shear=(-10, 10),         # Сдвиг (дисторсия/растяжение по осям) от -10 до +10 градусов
         fill=0                   # Чем заполнять пустые зоны, образовавшиеся при сдвиге (0 - черный)
     ),
@@ -73,19 +75,87 @@ tfm_train = v2.Compose([
     v2.Normalize(mean=[0.0426], std=[0.2020])
 ])
 
-dataset = load_dataset("Teklia/IAM-line")
-# dataset = load_from_disk("Teklia/IAM-line")
+tfm_train_font = v2.Compose([
+    v2.ToImage(),
+    v2.ToDtype(torch.float, scale=True),
+    v2.Lambda(lambda x: (x < 0.8).float()),
+    v2.RandomRotation(
+        degrees=(-15, 15),
+        expand=True,
+        fill=0),
+    v2.RandomAffine(
+        degrees=(0, 0),
+        translate=(0.1, 0.1),    # Случайное смещение до 10% по горизонтали и вертикали
+        scale=(0.6, 1.4),        # Случайное масштабирование (зум) от 90% до 110%
+        shear=(-10, 10),         # Сдвиг (дисторсия/растяжение по осям) от -10 до +10 градусов
+        fill=0                   # Чем заполнять пустые зоны, образовавшиеся при сдвиге (0 - черный)
+    ),
+    v2.Lambda(cut_zero_border),
+    v2.Normalize(mean=[0.0426], std=[0.2020])
+])
 
+# load_from_disk("Teklia/IAM-line")
+# dataset
+def get_IAM():
+    return load_dataset("Teklia/IAM-line")
+
+class HTR_Full_Dataset(Dataset):
+    def __init__(self, dataset1, dataset2) -> None:
+        super().__init__()
+        self.ds1 = dataset1
+        self.ds2 = dataset2
+
+    def __len__(self):
+        return len(self.ds1) + len(self.ds2)
+
+    def __getitem__(self, index):
+        return self.ds1[index] if index < len(self.ds1) else self.ds2[index - len(self.ds1)]
+
+
+# for downloading dataset
 class HTR_Dataset(Dataset):
-    def __init__(self, data, transform, device) -> None:
+    def __init__(self, data, transform) -> None:
         super().__init__()
         self.data=data
         self.transform=transform
-        self.device=device
     def __len__(self):
         return len(self.data)
     def __getitem__(self, index):
         return (self.transform(self.data[index]['image']), self.data[index]['text'])
+
+class HTR_Fonts_Dataset(Dataset):
+    def __init__(self, data_path, tfm, languages=['en']) -> None:
+        super().__init__()
+        self.data_path=data_path
+        self.languages=languages
+        self.tfm=tfm
+
+        self.lens = {}
+        for l in languages:
+            self.lens[l] = {}
+            for f in listdir(join(data_path, l)):
+                self.lens[l][f] = len(listdir(join(data_path, l, f))) // 2
+
+    def __len__(self):
+        len = 0
+        for l in self.languages:
+            for f in self.lens[l].keys():
+                len += self.lens[l][f]
+        return len
+
+    def __getitem__(self, index):
+        for l in self.languages:
+            for f in self.lens[l].keys():
+                index -= self.lens[l][f]
+                if index < 0:
+                    index = index + self.lens[l][f]
+                    file = f'{join(self.data_path, l, f)}/{index}'
+                    img = Image.open(f'{file}.png')
+                    text = ''
+                    with open(f'{file}.txt', 'r', encoding='utf-8') as t:
+                        text = t.readline()
+                    return self.tfm(img), text
+        return None
 
 def htr_collate_fn(batch):
     images = [item[0] for item in batch]

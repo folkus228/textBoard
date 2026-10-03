@@ -1,0 +1,69 @@
+
+{
+  "FredokaOneCyrillic-Regular.ttf": [
+    {
+      "en": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "ru": "АБВГДЕËЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+    },
+    {
+      "type": "typescript",
+      "en": 1600,
+      "ru": 1600
+    }
+  ],
+  "KalissaRegular_0.otf": [
+    {
+      "en": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY0123456789!\"#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "ru": "АБВГДЕËЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+    },
+    {
+      "type": "manuscript",
+      "en": 800,
+      "ru": 2000
+    }
+  ],
+  "SignThatS(kerning).otf": [
+    {
+      "en": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXY0123456789!\"#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "ru": "АБВГДЕËЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчщъыьэюя"
+    },
+    {
+      "type": "manuscript",
+      "en": 700,
+      "ru": 1000
+    }
+  ],
+  "Scrawl_Regular_0.ttf": [
+    {
+      "en": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "ru": "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+    },
+    {
+      "type": "manuscript",
+      "en": 2000,
+      "ru": 1500
+    }
+  ],
+  "PFScandalProBold.otf": [
+    {
+      "en": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "ru": "АБВГДЕËЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+    },
+    {
+      "type": "semi-manuscript",
+      "en": 2200,
+      "ru": 2200
+    }
+  ],
+  "ALSFinlandiaScript-Bold.otf": [
+    {
+      "en": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\"#$%&\\'()*+,-./:;<=>?@[\\]^_`{|}~",
+      "ru": "АБВГДЕËЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+    },
+    {
+      "type": "semi-manuscript",
+      "en": 1000,
+      "ru": 1500
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+# %%
 import torch
 from torch import optim
 from torch.optim.lr_scheduler import CosineAnnealingLR, OneCycleLR #, ReduceLROnPlateau
@@ -5,8 +6,9 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.nn import functional as F
 
+# from test import dataset
 from tools import ctc_greedy_decode
-from data import tokenizer, HTR_Dataset, htr_collate_fn, tfm_train, tfm_val, dataset
+from data import tokenizer, HTR_Dataset, htr_collate_fn, tfm_train_IAM, tfm_val, get_IAM
 from model import CRNN
 
 from tqdm import tqdm
@@ -66,7 +68,7 @@ def train(model:nn.Module, loss_fn, optimizer, sheduler, train_loader, validatio
         metrics_val=validate(model, loss_fn, validation_loader, device)
         metrics_train=validate(model, loss_fn, train_loader, device)
         torch.save({'model': model.state_dict(), 'optimizer': optimizer.state_dict(), 'sheduler': sheduler.state_dict(), 'current_epoch': epoch, 'max_epoch': epochs},
-                   f'/content/drive/MyDrive/models_CRNN_V2/epoch({epoch}|{epochs})_cel{metrics_val['cel']:.2f}_cer{metrics_val['cer']:.2f}.pth')
+                   f'/content/drive/MyDrive/models_CRNN_V2/epoch({epoch}|{epochs})_cel{metrics_val["cel"]:.2f}_cer{metrics_val["cer"]:.2f}.pth')
         print(f'''
             epoch ({epoch}):
                 validation:
@@ -78,9 +80,10 @@ def train(model:nn.Module, loss_fn, optimizer, sheduler, train_loader, validatio
             ''')
 
 # ----------------------------------------------| DATA |--------------------------------------------
-train_dataset = HTR_Dataset(dataset['train'], transform=tfm_train, device=device)
-validation_dataset = HTR_Dataset(dataset['validation'], transform=tfm_val, device=device)
-test_dataset = HTR_Dataset(dataset['test'], transform=tfm_val, device=device)
+dataset = get_IAM()
+train_dataset = HTR_Dataset(dataset['train'], transform=tfm_train_IAM)
+validation_dataset = HTR_Dataset(dataset['validation'], transform=tfm_val)
+test_dataset = HTR_Dataset(dataset['test'], transform=tfm_val)
 
 train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, collate_fn=htr_collate_fn)
 test_loader = DataLoader(test_dataset, batch_size=4, shuffle=True, collate_fn=htr_collate_fn)
@@ -94,8 +97,8 @@ optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.1)
 sheduler = OneCycleLR(optimizer, max_lr=1e-3, total_steps=((len(train_loader)*20) // 8)+1, pct_start=0.1, div_factor=25, final_div_factor=1e4)
 
 # ----------------------------------------------| TRAIN |-------------------------------------------
-# model_name = '/content/drive/MyDrive/models_CRNN_V2/epoch(1|20)_cel3.24_cer1.00.pth'
-# model.load_state_dict(torch.load(model_name)['model'])
+model_name = 'models/IAM_epoch(14_20)_cel0.31_cer0.09.pth'
+model.load_state_dict(torch.load(model_name, map_location=device)['model'])
 # optimizer.load_state_dict(torch.load(model_name)['optimizer'])
 # sheduler.load_state_dict(torch.load(model_name)['sheduler'])
 # current_epoch = torch.load(model_name)['current_epoch']
@@ -115,7 +118,3 @@ print(f'''
         cel - {test_metrics['cel']:.4f}
         cer - {(100*test_metrics['cer']):.4f}
     ''')
-
-# -------------------------------------------| FINE-TUNING |----------------------------------------
-
-train(model, loss_fn, optimizer, sheduler, train_loader, validation_loader, device, current_epochs=1, epochs=20, acum_steps=8)
